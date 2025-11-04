@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Trail Map</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f6f8;
+        --panel: #ffffff;
+        --text: #1a1d21;
+        --muted: #5a6570;
+        --accent: #ec1c28;
+        --shadow: 0 18px 40px rgba(20, 28, 38, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: clamp(16px, 4vw, 40px);
+      }
+
+      .card {
+        width: min(100%, 440px);
+        background: var(--panel);
+        border-radius: 20px;
+        padding: clamp(18px, 5vw, 32px);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(16px, 5vw, 26px);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(24px, 6vw, 30px);
+        font-weight: 700;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.5;
+        color: var(--muted);
+        font-size: clamp(15px, 3.8vw, 16px);
+      }
+
+      .map-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 906.9 / 1920;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #10131a;
+      }
+
+      .map-wrapper img.map {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .map-wrapper .pointer {
+        position: absolute;
+        width: clamp(64px, 18vw, 90px);
+        max-width: 120px;
+        transform: translate(-50%, -90%);
+        transition: top 300ms ease, left 300ms ease;
+        filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.22));
+      }
+
+      .location-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid rgba(26, 29, 33, 0.08);
+        border-radius: 16px;
+        padding: 14px 16px;
+        font-size: clamp(15px, 3.6vw, 17px);
+        font-weight: 600;
+      }
+
+      .location-label span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(236, 28, 40, 0.08);
+        color: #c01222;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      @media (hover: hover) {
+        a {
+          color: inherit;
+        }
+
+        a:hover {
+          color: var(--accent);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <header>
+        <h1>Trail Wayfinding</h1>
+        <p>
+          Scan any trail marker QR to load this map. The red pointer highlights
+          where you are right now.
+        </p>
+      </header>
+
+      <section class="map-wrapper" aria-live="polite">
+        <img class="map" src="Map.svg" alt="Trail overview map" />
+        <img
+          class="pointer"
+          src="LocationPointer.svg"
+          alt="Current location marker"
+          data-pointer
+        />
+      </section>
+
+      <div class="location-label">
+        <div>
+          <span>You're near</span>
+          <div data-location-label>Trailhead Pavilion</div>
+        </div>
+        <div class="chip" hidden data-fallback-chip>
+          Default location used
+        </div>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        const LOCATIONS = {
+          trailhead: {
+            label: "Trailhead Pavilion",
+            top: 78,
+            left: 28
+          },
+          creekbend: {
+            label: "Creek Bend Boardwalk",
+            top: 55,
+            left: 46
+          },
+          ridgepoint: {
+            label: "Ridge Point Overlook",
+            top: 32,
+            left: 68
+          }
+        };
+
+        const fallbackKey = "trailhead";
+        const params = new URLSearchParams(window.location.search);
+        const requestedKey = (params.get("loc") || "").toLowerCase().trim();
+        const location = LOCATIONS[requestedKey] || LOCATIONS[fallbackKey];
+
+        const pointer = document.querySelector("[data-pointer]");
+        const label = document.querySelector("[data-location-label]");
+        const fallbackChip = document.querySelector("[data-fallback-chip]");
+
+        if (!pointer || !label) {
+          return;
+        }
+
+        pointer.style.top = location.top + "%";
+        pointer.style.left = location.left + "%";
+        label.textContent = location.label;
+
+        const isFallback = !LOCATIONS[requestedKey] && requestedKey !== "";
+        if (isFallback && fallbackChip) {
+          fallbackChip.hidden = false;
+        }
+      })();
+    </script>
+  </body>
+</html>
